@@ -1,13 +1,11 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "Capability for the main window",
-  "windows": ["main"],
+  "identifier": "main-capability",
+  "description": "Capability for managing WireGuard tunnels",
+  "windows": [
+    "main"
+  ],
   "permissions": [
-    "core:default",
-    "opener:default",
-    "dialog:allow-open",
-    "dialog:allow-ask",
-    "dialog:allow-message"
+    "core:default"
   ]
 }

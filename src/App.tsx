@@ -1,50 +1,57 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
 
+function App() {
+  const [file, setFile] = useState<File | null>(null);
+  const [configContent, setConfigContent] = useState("");
+  const [tunnels, setTunnels] = useState<string[]>([]);
 
-const App = () => {
-  const [tunnelName, setTunnelName] = useState("");
-  const [fileContent, setFileContent] = useState("");
+  useEffect(() => {
+    invoke<string[]>("list_tunnels").then(setTunnels);
+  }, []);
 
-  const handleFileSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const content = await file.text();
-      setFileContent(content); // Сохраняем содержимое файла
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      const reader = new FileReader();
+      reader.onload = () => setConfigContent(reader.result as string);
+      reader.readAsText(selectedFile);
     }
   };
 
-  const handleAddTunnel = async () => {
-    console.log({tunnelName, fileContent})
-    if (!tunnelName || !fileContent) {
-      alert("Please provide a name and select a config file.");
-      return;
+  const saveConfig = async () => {
+    if (file && configContent) {
+      await invoke("save_config_file", { 
+        fileName: file.name, 
+        content: configContent 
+      });
+      setTunnels([...tunnels, file.name]);
     }
+  };
 
-    try {
-      await invoke('add_tunnel', { configContent: fileContent, tunnelName });
-      alert('Tunnel added successfully!');
-    } catch (error) {
-      console.error('Failed to add tunnel:', error);
-    }
+  const toggleTunnel = async (fileName: string, action: string) => {
+    await invoke("toggle_tunnel", { fileName, action });
   };
 
   return (
     <div>
-      <input
-        type="text"
-        value={tunnelName}
-        onChange={(e) => setTunnelName(e.target.value)}
-        placeholder="Enter Tunnel Name"
-      />
-      <input
-        type="file"
-        onChange={handleFileSelection}
-      />
-      <button onClick={handleAddTunnel}>Add Tunnel</button>
+      <input type="file" onChange={handleFileChange} />
+      <button onClick={saveConfig} disabled={!file}>
+        Save Config
+      </button>
+      <h2>Active Tunnels</h2>
+      <ul>
+        {tunnels.map((tunnel) => (
+          <li key={tunnel}>
+            {tunnel}
+            <button onClick={() => toggleTunnel(tunnel, "up")}>Start</button>
+            <button onClick={() => toggleTunnel(tunnel, "down")}>Stop</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
-};
+}
 
 export default App;
