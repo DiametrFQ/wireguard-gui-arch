@@ -4683,7 +4683,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "wireguard-ui"
+name = "wireguard-gui-arch"
 version = "0.1.0"
 dependencies = [
  "dirs 4.0.0",
