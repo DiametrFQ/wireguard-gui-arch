@@ -1,10 +1,11 @@
 {
-  "name": "wireguard-ui",
+  "name": "wireguard-gui-arch",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "t:dev": "sudo -E env PATH=$PATH tauri dev",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
